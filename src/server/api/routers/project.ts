@@ -15,7 +15,7 @@ export const projectRouter = createTRPCRouter({
         data: {
           githubUrl: input.githubUrl,
           name: input.name,
-          userToProject: {
+          userToProjects: {
             create: {
               userId: ctx.user.userId!,
             },
@@ -24,4 +24,21 @@ export const projectRouter = createTRPCRouter({
       });
       return project;
     }),
+
+  getProjects: protectedProcedure.query(async ({ ctx }) => {
+    console.log(ctx.user);
+    return await ctx.db.project.findMany({
+      where: {
+        userToProjects: {
+          some: {
+            userId: ctx.user.userId!,
+          },
+        },
+        deletedAt: null,
+      },
+      include: {
+        userToProjects: true, // Fetch related data if needed
+      },
+    });
+  }),
 });
